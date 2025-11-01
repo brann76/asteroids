@@ -1,6 +1,8 @@
 import pygame
 from constants import *
 from player import *
+from asteroid import *
+from asteroidfield import *
 
 def main():
     print("Starting Asteroids!")
@@ -14,7 +16,17 @@ def main():
     clock = pygame.time.Clock()
     dt = 0
 
+    updatables = pygame.sprite.Group()
+    drawables = pygame.sprite.Group()
+    Player.containers = (updatables, drawables)
+
+    asteroids = pygame.sprite.Group()
+    Asteroid.containers = asteroids, updatables, drawables
+
+    AsteroidField.containers = updatables
+    
     player = Player(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2)
+    asteroid_field = AsteroidField()
 
     while True:
         for event in pygame.event.get():
@@ -22,10 +34,18 @@ def main():
                 pygame.quit()
                 return
         
-        player.update(dt)
+        updatables.update(dt)
+
+        for obj in asteroids:
+            if obj.collides_with(player):
+                print("Game over!")
+                return
 
         screen.fill("black")
-        player.draw(screen)
+
+        for obj in drawables:
+            obj.draw(screen)
+
         pygame.display.flip()
         dt = clock.tick(60) / 1000  # Limit to 60 FPS and get delta time
         
